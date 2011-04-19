@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
 				layout="absolute"
+				backgroundColor="#ffffff"
+				backgroundGradientColors="[#ffffff, #ffffff]"
 				applicationComplete="applicationCompleteHandler(event)">
 	<mx:Script>
 		<![CDATA[
@@ -12,6 +14,9 @@
 
 			private var loader:Loader;
 			private var s:ScreenshotManager = new ScreenshotManager();
+
+			[Bindable] private var buttonWidth:Number = 300;
+			[Bindable] private var buttonHeight:Number = 100;
 
 			protected function applicationCompleteHandler(event:FlexEvent):void
 			{
@@ -33,6 +38,7 @@
 				image.width = loader.width;
 				image.height = loader.height;
 				image.source = loader;
+				holder.visible = holder.includeInLayout = true;
 			}
 
 			protected function btnCaptureFullScreen_clickHandler(event:MouseEvent):void
@@ -103,25 +109,28 @@
 		]]>
 	</mx:Script>
 
-	<mx:VBox width="100%" height="100%">
-		<mx:Button id="btnCaptureFullScreen" click="btnCaptureFullScreen_clickHandler(event)" label="Capture Full Screen" />
-		<mx:HBox width="100%" verticalAlign="middle">
-			<mx:Button id="btnCaptureDisplayObject" click="btnCaptureDisplayObject_clickHandler(event)" label="Capture Selected Display Object" />
-			<mx:Label text="Selected Display Object:" />
-			<mx:ComboBox id="cmbDisplayObjects">
-				<mx:String id="campus">Campus</mx:String>
-				<mx:String id="skyline">Skyline</mx:String>
-				<mx:String id="burgh">Pittsburgh Text</mx:String>
-			</mx:ComboBox>
-			<mx:CheckBox id="chkIncludeOverlap" label="Include stuff that overlaps with display object" />
-		</mx:HBox>
-		<mx:HBox width="100%" verticalAlign="middle">
-			<mx:Button id="btnCaptureMouseArea" click="btnCaptureMouseArea_clickHandler(event)" label="Mouse Capture" />
-			<mx:CheckBox id="chkLimitCapture" label="Limit Capture To Selected Display Object" />
-		</mx:HBox>
+	<mx:VBox id="container" width="100%" height="100%" horizontalAlign="center">
+		
+		
+		<mx:VBox horizontalAlign="center">
+			<mx:Label text="Image Capture Options" fontSize="18" fontWeight="bold" />
+			<mx:HBox width="100%">
+				<mx:VBox>
+					<mx:CheckBox id="chkIncludeOverlap" label="Include overlapping content in image" />
+					<mx:CheckBox id="chkLimitCapture" label="Clip image to selected object" />
+				</mx:VBox>
+				<mx:HBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="right">
+					<mx:Label text="Selected Object:" />
+					<mx:ComboBox id="cmbDisplayObjects">
+						<mx:String id="campus">Campus</mx:String>
+						<mx:String id="skyline">Skyline</mx:String>
+						<mx:String id="burgh">Pittsburgh Text</mx:String>
+					</mx:ComboBox>
+				</mx:HBox>
+			</mx:HBox>
+		</mx:VBox>
 
-
-		<mx:HBox width="100%">
+		<mx:HBox>
 			<mx:Canvas>
 				<mx:Image id="imgCampus" source="@Embed('/assets/cmupitt.jpg')" />
 				<mx:Text id="txtPittsburgh" y="-40" fontSize="50" text="Pittsburgh" />
@@ -132,10 +141,27 @@
 				<mx:Label text="Sachin Kotwani (http://www.flickr.com/people/sksachin/)" />
 			</mx:VBox>
 		</mx:HBox>
-		<mx:VBox id="holder" width="100%" height="100%">
-			<mx:Label text="Captured Image:" />
-			<mx:Image id="image" />
-		</mx:VBox>
+
+		<mx:HBox verticalAlign="middle">
+			<mx:Button id="btnCaptureFullScreen" label="Capture Full Screen"
+					   width="{buttonWidth}" height="{buttonHeight}"
+					   click="btnCaptureFullScreen_clickHandler(event)" />
+			<mx:Button id="btnCaptureDisplayObject" label="Capture Selected Object" 
+					   width="{buttonWidth}" height="{buttonHeight}"
+					   click="btnCaptureDisplayObject_clickHandler(event)" />
+			<mx:Button id="btnCaptureMouseArea" label="Capture Using Mouse" 
+					   width="{buttonWidth}" height="{buttonHeight}"
+					   click="btnCaptureMouseArea_clickHandler(event)" />
+		</mx:HBox>
 
 	</mx:VBox>
+
+	<mx:TitleWindow id="holder" title="Captured Image" horizontalCenter="0" verticalCenter="0"
+					showCloseButton="true" 
+					maxWidth="{container.width-20}" maxHeight="{container.height-20}"
+					close="{holder.includeInLayout=holder.visible=false;}"
+					includeInLayout="false" visible="false">
+		<mx:Image id="image" />
+	</mx:TitleWindow>
+
 </mx:Application>
