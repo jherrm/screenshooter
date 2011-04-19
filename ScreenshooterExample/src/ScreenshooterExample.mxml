@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+				layout="absolute"
+				applicationComplete="applicationCompleteHandler(event)">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Image;
+			import mx.events.FlexEvent;
+			
+			import screenshooter.ScreenshotManager;
+			import screenshooter.events.ScreenshotEvent;
+
+			private var loader:Loader;
+			private var s:ScreenshotManager = new ScreenshotManager();
+
+			protected function applicationCompleteHandler(event:FlexEvent):void
+			{
+				s.percentWidth = 100;
+				s.percentHeight = 100;
+				s.addEventListener(ScreenshotEvent.SCREENSHOT_FINISH, screenshotHandler);
+				addChild(s); // Add the ScreenshotManager to the root of the application so that it isn't clipped by a container
+			}
+
+			private function screenshotHandler(event:ScreenshotEvent):void
+			{
+				loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loader_loadCompleteHandler);
+				loader.loadBytes(event.imgBytes);
+			}
+
+			private function loader_loadCompleteHandler(event:Event):void
+			{
+				image.width = loader.width;
+				image.height = loader.height;
+				image.source = loader;
+			}
+
+			protected function btnCaptureFullScreen_clickHandler(event:MouseEvent):void
+			{
+				s.captureFullScreen();
+			}
+
+			protected function btnCaptureDisplayObject_clickHandler(event:MouseEvent):void
+			{
+				s.targetDisplayObject = getSelectedDisplayObject();
+				s.captureDisplayObject(true, chkIncludeOverlap.selected);
+				s.targetDisplayObject = null;
+			}
+
+			protected function btnCaptureMouseArea_clickHandler(event:MouseEvent):void
+			{
+				if(chkLimitCapture.selected)
+				{
+					switch(cmbDisplayObjects.selectedItem)
+					{
+						case campus:
+							s.capturingBox = imgCampus;
+							break;
+						case skyline:
+							s.capturingBox = imgSkyline;
+							break;
+						case burgh:
+							s.capturingBox = txtPittsburgh;
+							break;
+					}
+					if(!chkIncludeOverlap.selected)
+						s.targetDisplayObject = getSelectedDisplayObject();
+				}
+				else
+				{
+					s.capturingBox = s.targetDisplayObject = null;
+				}
+
+				s.addEventListener(ScreenshotEvent.SCREENSHOT_FINISH, screenshot_finishHandler);
+				s.startInteractiveCapture();
+			}
+
+			private function screenshot_finishHandler(event:ScreenshotEvent):void
+			{
+				event.target.removeEventListener(ScreenshotEvent.SCREENSHOT_FINISH, screenshot_finishHandler);
+				s.targetDisplayObject = null;
+			}
+
+			private function getSelectedDisplayObject():DisplayObject
+			{
+				var object:DisplayObject;
+				switch(cmbDisplayObjects.selectedItem)
+				{
+					case campus:
+						object = imgCampus;
+						break;
+					case skyline:
+						object = imgSkyline;
+						break;
+					case burgh:
+						object = txtPittsburgh;
+						break;
+				}
+
+				return object;
+			}
+
+		]]>
+	</mx:Script>
+
+	<mx:VBox width="100%" height="100%">
+		<mx:Button id="btnCaptureFullScreen" click="btnCaptureFullScreen_clickHandler(event)" label="Capture Full Screen" />
+		<mx:HBox width="100%" verticalAlign="middle">
+			<mx:Button id="btnCaptureDisplayObject" click="btnCaptureDisplayObject_clickHandler(event)" label="Capture Selected Display Object" />
+			<mx:Label text="Selected Display Object:" />
+			<mx:ComboBox id="cmbDisplayObjects">
+				<mx:String id="campus">Campus</mx:String>
+				<mx:String id="skyline">Skyline</mx:String>
+				<mx:String id="burgh">Pittsburgh Text</mx:String>
+			</mx:ComboBox>
+			<mx:CheckBox id="chkIncludeOverlap" label="Include stuff that overlaps with display object" />
+		</mx:HBox>
+		<mx:HBox width="100%" verticalAlign="middle">
+			<mx:Button id="btnCaptureMouseArea" click="btnCaptureMouseArea_clickHandler(event)" label="Mouse Capture" />
+			<mx:CheckBox id="chkLimitCapture" label="Limit Capture To Selected Display Object" />
+		</mx:HBox>
+
+
+		<mx:HBox width="100%">
+			<mx:Canvas>
+				<mx:Image id="imgCampus" source="@Embed('/assets/cmupitt.jpg')" />
+				<mx:Text id="txtPittsburgh" y="-40" fontSize="50" text="Pittsburgh" />
+			</mx:Canvas>
+			<mx:VBox>
+				<mx:Image id="imgSkyline" source="@Embed('/assets/pittsburgh.jpg')" />
+				<mx:Label text="Photos from kla4067 (http://www.flickr.com/photos/84263554@N00/) and " />
+				<mx:Label text="Sachin Kotwani (http://www.flickr.com/people/sksachin/)" />
+			</mx:VBox>
+		</mx:HBox>
+		<mx:VBox id="holder" width="100%" height="100%">
+			<mx:Label text="Captured Image:" />
+			<mx:Image id="image" />
+		</mx:VBox>
+
+	</mx:VBox>
+</mx:Application>
